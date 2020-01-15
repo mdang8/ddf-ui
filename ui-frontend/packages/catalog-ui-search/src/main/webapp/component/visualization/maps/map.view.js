@@ -41,6 +41,7 @@ const Gazetteer = require('../../../react-component/location/gazetteer.js')
 
 import MapSettings from '../../../react-component/map-settings'
 import MapInfo from '../../../react-component/map-info'
+import RulerOptions from '../../../react-component/ruler-options'
 import DistanceInfo from '../../../react-component/distance-info'
 import getDistance from 'geolib/es/getDistance'
 
@@ -336,6 +337,23 @@ module.exports = Marionette.LayoutView.extend({
     this.addRegion('toolbarSettings', '.toolbar-settings')
     this.toolbarSettings.show(new MapSettingsView())
   },
+  addRulerOptions() {
+    const RulerOptionsView = Marionette.ItemView.extend({
+      template: () => {
+        return (
+          <RulerOptions
+            map={this.mapModel}
+            coordinateFormat={user.get('user').get('preferences').get('coordinateFormat')}
+          />
+        )
+      },
+    })
+    this.$el
+      .find('.cesium-viewer-toolbar')
+      .append('<div class="toolbar-ruler-options is-button"></div>')
+    this.addRegion('toolbarRulerOptions', '.toolbar-ruler-options')
+    this.toolbarRulerOptions.show(new RulerOptionsView())
+  },
   onMapHover(event, mapEvent) {
     const metacard = this.options.selectionInterface
       .getActiveSearchResults()
@@ -516,6 +534,7 @@ module.exports = Marionette.LayoutView.extend({
     this.addClustering()
     this.addLayers()
     this.addSettings()
+    this.addRulerOptions()
     this.endLoading()
     this.zoomToHome()
   },
