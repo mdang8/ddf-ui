@@ -17,6 +17,7 @@ import CopyCoordinates from '../copy-coordinates'
 import SelectCoordinates from '../select-coordinates'
 import { Menu, MenuItem } from '../menu'
 import styled from 'styled-components'
+const user = require('../../component/singletons/user-instance.js')
 
 const Icon = styled.div`
   display: inline-block;
@@ -75,17 +76,40 @@ const renderSelectCoordinatesMenu = ({
   selectCoordHandler,
   clearRulerHandler,
   mapModel,
-}: Props) => (
-  <MenuItem value="SelectCoordinates">
-    <SelectCoordinates
-      coordinateValues={coordinateValues}
-      closeParent={closeMenu}
-      selectCoordHandler={selectCoordHandler}
-      clearRulerHandler={clearRulerHandler}
-      mapModel={mapModel}
-    />
-  </MenuItem>
-)
+}: Props) => {
+  const { dms, lat, lon, mgrs, utmUps } = coordinateValues;
+  const userPreferences = user.get('user').get('preferences');
+  const coordinateFormat = userPreferences.get('coordinateFormat');
+  let coord = '';
+  switch (coordinateFormat) {
+    case 'degrees':
+      coord = dms
+      break
+    case 'decimal':
+      coord = `${lat} ${lon}`
+      break
+    case 'mgrs':
+      coord = mgrs
+      break
+    case 'utm':
+      coord = utmUps
+      break
+    default:
+      break
+  }
+
+  return (
+    <MenuItem value="SelectCoordinates">
+      <SelectCoordinates
+        coordinates={coord}
+        closeParent={closeMenu}
+        selectCoordHandler={selectCoordHandler}
+        clearRulerHandler={clearRulerHandler}
+        mapModel={mapModel}
+      />
+    </MenuItem>
+  );
+}
 
 const renderHistogramMenu = () => (
   <MenuItem value="Histogram">
