@@ -24,10 +24,7 @@ const Clipboard = require('clipboard')
 const announcement = require('component/announcement')
 
 type Props = {
-  coordinateValues: {
-    lat: string
-    lon: string
-  }
+  coordinates: string
   closeParent: () => void
   selectCoordHandler: () => void
   clearRulerHandler: () => void
@@ -145,8 +142,7 @@ const generateClipboardHandler = (
 }
 
 const render = (props: Props) => {
-  const { lat, lon } = props.coordinateValues
-  const { closeParent, selectCoordHandler, clearRulerHandler, mapModel } = props
+  const { coordinates, closeParent, selectCoordHandler, clearRulerHandler, mapModel } = props
   const currentState = mapModel.get('measurementState')
   const distanceText = getDistanceText(
     mapModel.get('currentDistance'),
@@ -199,7 +195,7 @@ const render = (props: Props) => {
           >
             <Text>
               <Description>{measurementSelectText}</Description>
-              {`${lat} ${lon}`}
+              {coordinates}
             </Text>
           </MenuAction>
           <MenuAction
