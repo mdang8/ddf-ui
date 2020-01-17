@@ -19,9 +19,11 @@ import { hot } from 'react-hot-loader'
 const TextField = require('../text-field/index')
 
 type Props = {
-  coordinateString: string
+  startCoordinate: { value: string; handleChange: (value: string) => void }
+  endCoordinate: { value: string; handleChange: (value: string) => void }
   distance: number
-  coordinateUpdateHandler: (e: Event) => void
+  updateHandler: () => void
+  clearHandler: () => void
 }
 
 const Root = styled.div`
@@ -35,9 +37,29 @@ const Text = styled.div`
 const Description = styled.div`
   opacity: ${props => props.theme.minimumOpacity};
 `
+const UpdateButton = styled.button`
+  padding-right: ${props => props.theme.largeSpacing};
+  padding-left: ${props => props.theme.largeSpacing};
+  margin: 0 !important;
+  border: 1px solid black;
+  background-color: #1abf03;
+`
+const ClearButton = styled.button`
+  padding-right: ${props => props.theme.largeSpacing};
+  padding-left: ${props => props.theme.largeSpacing};
+  margin: 0 !important;
+  border: 1px solid black;
+  background-color: #ff0000;
+`
 
 const render = (props: Props) => {
-  const { coordinateString, distance, coordinateUpdateHandler } = props
+  const {
+    startCoordinate,
+    endCoordinate,
+    distance,
+    updateHandler,
+    clearHandler,
+  } = props
   // use meters when distance is under 1000m and convert to kilometers when ≥1000m
   const distanceText =
     distance < 1000 ? `${distance} m` : `${distance * 0.001} km`
@@ -48,24 +70,37 @@ const render = (props: Props) => {
         <Description>Start Coordinate</Description>
       </Text>
       <TextField
-        placeholder={coordinateString}
-        value={coordinateString}
-        onChange={coordinateUpdateHandler}
+        placeholder={startCoordinate.value}
+        value={startCoordinate.value}
+        onChange={startCoordinate.handleChange}
       />
 
       <Text>
         <Description>End Coordinate</Description>
       </Text>
       <TextField
-        placeholder={coordinateString}
-        value={coordinateString}
-        onChange={coordinateUpdateHandler}
+        placeholder={endCoordinate.value}
+        value={endCoordinate.value}
+        onChange={endCoordinate.handleChange}
       />
 
       <Text>
         <Description>Distance</Description>
         {distanceText}
       </Text>
+
+      <UpdateButton
+        onClick={updateHandler}
+        title="Update the selected coordinates"
+      >
+        <span>Update</span>
+      </UpdateButton>
+      <ClearButton
+        onClick={clearHandler}
+        title="Clears the selected coordinates"
+      >
+        <span>Clear</span>
+      </ClearButton>
     </Root>
   )
 }
