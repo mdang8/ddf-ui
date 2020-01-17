@@ -343,7 +343,13 @@ module.exports = Marionette.LayoutView.extend({
         return (
           <RulerOptions
             map={this.mapModel}
-            coordinateFormat={user.get('user').get('preferences').get('coordinateFormat')}
+            coordinateFormat={user
+              .get('user')
+              .get('preferences')
+              .get('coordinateFormat')}
+            startCoordinateHandler={this.mapModel.setStartingCoordinates.bind(
+              this.mapModel
+            )}
           />
         )
       },
@@ -427,10 +433,9 @@ module.exports = Marionette.LayoutView.extend({
         this.clearRuler()
         point = this.map.addRulerPoint(this.mapModel.get('coordinateValues'))
         this.mapModel.addPoint(point)
-        this.mapModel.setStartingCoordinates({
-          lat: this.mapModel.get('coordinateValues')['lat'],
-          lon: this.mapModel.get('coordinateValues')['lon'],
-        })
+        this.mapModel.setStartingCoordinates(
+            this.mapModel.get('coordinateValues')
+        )
         const polyline = this.map.addRulerLine(
           this.mapModel.get('coordinateValues')
         )
@@ -439,12 +444,12 @@ module.exports = Marionette.LayoutView.extend({
       case 'END':
         point = this.map.addRulerPoint(this.mapModel.get('coordinateValues'))
         this.mapModel.addPoint(point)
-        this.map.setRulerLine({
-          lat: this.mapModel.get('coordinateValues')['lat'],
-          lon: this.mapModel.get('coordinateValues')['lon'],
-        })
+        this.map.setRulerLine(this.map.get('coordinateValues'))
         break
       case 'NONE':
+        this.mapModel.setStartingCoordinates(
+          this.mapModel.get('coordinateValues')
+        )
         this.clearRuler()
         break
       default:

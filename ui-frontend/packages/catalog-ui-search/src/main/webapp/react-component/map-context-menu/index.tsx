@@ -77,10 +77,10 @@ const renderSelectCoordinatesMenu = ({
   clearRulerHandler,
   mapModel,
 }: Props) => {
-  const { dms, lat, lon, mgrs, utmUps } = coordinateValues;
-  const userPreferences = user.get('user').get('preferences');
-  const coordinateFormat = userPreferences.get('coordinateFormat');
-  let coord = '';
+  const { dms, lat, lon, mgrs, utmUps } = coordinateValues
+  const userPreferences = user.get('user').get('preferences')
+  const coordinateFormat = userPreferences.get('coordinateFormat')
+  let coord = ''
   switch (coordinateFormat) {
     case 'degrees':
       coord = dms
@@ -108,7 +108,7 @@ const renderSelectCoordinatesMenu = ({
         mapModel={mapModel}
       />
     </MenuItem>
-  );
+  )
 }
 
 const renderHistogramMenu = () => (

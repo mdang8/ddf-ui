@@ -142,7 +142,13 @@ const generateClipboardHandler = (
 }
 
 const render = (props: Props) => {
-  const { coordinates, closeParent, selectCoordHandler, clearRulerHandler, mapModel } = props
+  const {
+    coordinates,
+    closeParent,
+    selectCoordHandler,
+    clearRulerHandler,
+    mapModel,
+  } = props
   const currentState = mapModel.get('measurementState')
   const distanceText = getDistanceText(
     mapModel.get('currentDistance'),

@@ -22,8 +22,9 @@ import Dropdown from '../presentation/dropdown'
 import { hot } from 'react-hot-loader'
 
 type Props = {
-  map: Backbone.Model,
+  map: Backbone.Model
   coordinateFormat: string
+  startCoordinateHandler: (coordinates: string) => void
 } & WithBackboneProps
 
 const Span = styled.span`
@@ -34,26 +35,58 @@ const coordinateFormatsMapping = {
   degrees: 'dms',
   decimal: 'decimal',
   mgrs: 'mgrs',
-  utm: 'utmUps'
+  utm: 'utmUps',
 }
 
 function RulerOptions(props: Props) {
-  const { map, coordinateFormat } = props
-  const [ coordinates, setCoordinates ] = React.useState(map.get('coordinateValues'))
+  const { map, coordinateFormat, startCoordinateHandler } = props
+  let [endCoordinate, setEndCoordinate] = React.useState('')
+  const startCoordinate = useProperty(props, 'startingCoordinate')
+  const measurementState = useProperty(props, 'measurementState')
   const distance = useProperty(props, 'currentDistance')
 
-  function handleCoordinateChange(e: Event) {
-    setCoordinates((e.target as HTMLInputElement).value)
+  function changeStartCoordinate(value: string) {
+    startCoordinateHandler(value)
   }
 
+  const modelCoordinateValues = map.get('coordinateValues')
   // the coordinate format value returned from the defined mapping
-  const format = (hasKey(coordinateFormatsMapping, coordinateFormat))
+  const format = hasKey(coordinateFormatsMapping, coordinateFormat)
     ? coordinateFormatsMapping[coordinateFormat]
     : ''
+
+  let coordinateString,
+    startCoordinateString = ''
+  if (measurementState.value !== 'NONE') {
+    // decimal format is a special case because the values are stored in multiple keys
+    if (coordinateFormat === 'decimal') {
+      coordinateString = `${modelCoordinateValues.lat} ${
+        modelCoordinateValues.lon
+      }`
+      startCoordinateString = `${startCoordinate.value.lat} ${
+        startCoordinate.value.lon
+      }`
+    } else {
+      coordinateString = modelCoordinateValues[format]
+      startCoordinateString = startCoordinate.value[format]
+    }
+  }
+
+  if (measurementState.value === 'END') {
+    endCoordinate = coordinateString
+  } else {
+    startCoordinateString = coordinateString
+  }
+
   const rulerProps = {
-    coordinateString: coordinates[format],
-    distance,
-    coordinateUpdateHandler: handleCoordinateChange
+    startCoordinate: {
+      value: startCoordinateString,
+      handleChange: changeStartCoordinate,
+    },
+    endCoordinate: { value: endCoordinate, handleChange: setEndCoordinate },
+    distance: Number(distance.value),
+    updateHandler: () => {},
+    clearHandler: () => {},
   }
   const rulerOptions = <RulerOptionsPresentation {...rulerProps} />
 
@@ -67,16 +100,16 @@ function RulerOptions(props: Props) {
 
 /**
  * Helper method for setting up React effect hooks.
- * 
+ *
  * @param props - the component props (contains map model and Backbone props)
  * @param modelProperty - the property from the map model to listen for
- * 
- * @returns - the updated value of the property
+ *
+ * @returns - an object containing the updated value of the property and the handler function
  */
 function useProperty(props: Props, modelProperty: string) {
   const { listenTo, stopListening, map } = props
-  const [ property, setProperty ] = React.useState(map.get(modelProperty))
-  
+  const [property, setProperty] = React.useState(map.get(modelProperty))
+
   function handleChange(model: Backbone.Model) {
     setProperty(model.get(modelProperty))
   }
@@ -87,17 +120,20 @@ function useProperty(props: Props, modelProperty: string) {
     listenTo(map, `change:${modelProperty}`, handleChange)
     return () => stopListening(map, `change:${modelProperty}`, handleChange)
   })
-  
-  return property
+
+  return {
+    value: property,
+    handleChange,
+  }
 }
 
 /**
  * Helper method to determine if the given object contains the given key. This is needed for
  * TypeScript to not complain about incorrect index typing for object value accessing.
- * 
+ *
  * @param obj - the object to search in
  * @param key - the key to search for
- * 
+ *
  * @returns - a Boolean representing if the key was found in the object
  */
 function hasKey<O>(obj: O, key: keyof any): key is keyof O {
