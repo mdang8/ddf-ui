@@ -48,7 +48,6 @@ function RulerOptions(props: Props) {
   let [endCoordinate, setEndCoordinate] = React.useState('')
   const startCoordinate = useModelProperty(props, 'startingCoordinates')
   const measurementState = useModelProperty(props, 'measurementState')
-  const distance = useModelProperty(props, 'currentDistance')
 
   const coordinateFormat = userPreferences.get('coordinateFormat')
   const modelCoordinateValues = map.get('coordinateValues')
@@ -59,6 +58,7 @@ function RulerOptions(props: Props) {
 
   let coordinateString,
     startCoordinateString = ''
+  let distance = 0
   if (measurementState.value !== 'NONE') {
     // decimal format is a special case because the values are stored in multiple keys
     if (coordinateFormat === 'decimal') {
@@ -76,6 +76,7 @@ function RulerOptions(props: Props) {
 
   if (measurementState.value === 'END') {
     endCoordinate = coordinateString
+    distance = map.get('currentDistance')
   } else {
     startCoordinateString = coordinateString
   }
@@ -94,7 +95,7 @@ function RulerOptions(props: Props) {
       handleChange: changeStartCoordinate,
     },
     endCoordinate: { value: endCoordinate, handleChange: setEndCoordinate },
-    distance: Number(distance.value),
+    distance,
     updateHandler: () => {},
     clearHandler: () => {},
   }
