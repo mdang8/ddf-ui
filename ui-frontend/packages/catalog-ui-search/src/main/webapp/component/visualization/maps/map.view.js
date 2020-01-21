@@ -438,7 +438,7 @@ module.exports = Marionette.LayoutView.extend({
       case 'END':
         point = this.map.addRulerPoint(this.mapModel.get('coordinateValues'))
         this.mapModel.addPoint(point)
-        this.map.setRulerLine(this.map.get('coordinateValues'))
+        this.map.setRulerLine(this.mapModel.get('coordinateValues'))
         break
       case 'NONE':
         this.mapModel.setStartingCoordinates(
