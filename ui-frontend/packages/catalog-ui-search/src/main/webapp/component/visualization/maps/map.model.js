@@ -17,18 +17,10 @@ import wrapNum from '../../../react-component/utils/wrap-num/wrap-num.tsx'
 
 const Backbone = require('backbone')
 const MetacardModel = require('../../../js/model/Metacard.js')
-const user = require('../../singletons/user-instance.js')
 const mtgeo = require('mt-geo')
 const usngs = require('usng.js')
 const converter = new usngs.Converter()
 const usngPrecision = 6
-
-const coordinateFormatConversions = {
-  degrees: mtgeo.parseDMS,
-  decimal: undefined,
-  mgrs: converter.USNGtoLL,
-  utm: converter.UTMUPStoLL,
-}
 
 module.exports = Backbone.AssociatedModel.extend({
   relations: [
@@ -56,7 +48,7 @@ module.exports = Backbone.AssociatedModel.extend({
     points: [],
     labels: [],
     line: undefined,
-    startingCoordinates: {
+    startingCoordinate: {
       dms: '',
       lat: '',
       lon: '',

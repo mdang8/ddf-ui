@@ -21,10 +21,15 @@ import withListenTo, {
 import Dropdown from '../presentation/dropdown'
 import { hot } from 'react-hot-loader'
 
+const Common = require('../../js/Common')
+
+interface MapModel extends Backbone.Model {
+  setStartingCoordinates: (coordinates: Object) => void
+}
+
 type Props = {
-  map: Backbone.Model
-  coordinateFormat: string
-  startCoordinateHandler: (coordinates: string) => void
+  map: MapModel
+  userPreferences: Backbone.Model
 } & WithBackboneProps
 
 const Span = styled.span`
@@ -39,16 +44,13 @@ const coordinateFormatsMapping = {
 }
 
 function RulerOptions(props: Props) {
-  const { map, coordinateFormat, startCoordinateHandler } = props
+  const { map, userPreferences } = props
   let [endCoordinate, setEndCoordinate] = React.useState('')
-  const startCoordinate = useProperty(props, 'startingCoordinate')
-  const measurementState = useProperty(props, 'measurementState')
-  const distance = useProperty(props, 'currentDistance')
+  const startCoordinate = useModelProperty(props, 'startingCoordinates')
+  const measurementState = useModelProperty(props, 'measurementState')
+  const distance = useModelProperty(props, 'currentDistance')
 
-  function changeStartCoordinate(value: string) {
-    startCoordinateHandler(value)
-  }
-
+  const coordinateFormat = userPreferences.get('coordinateFormat')
   const modelCoordinateValues = map.get('coordinateValues')
   // the coordinate format value returned from the defined mapping
   const format = hasKey(coordinateFormatsMapping, coordinateFormat)
@@ -78,6 +80,14 @@ function RulerOptions(props: Props) {
     startCoordinateString = coordinateString
   }
 
+  function changeStartCoordinate(value: string) {
+    const convertedCoordinates = Common.convertCoordinateFormat(
+      value,
+      coordinateFormat
+    )
+    map.setStartingCoordinates(convertedCoordinates)
+  }
+
   const rulerProps = {
     startCoordinate: {
       value: startCoordinateString,
@@ -99,18 +109,18 @@ function RulerOptions(props: Props) {
 }
 
 /**
- * Helper method for setting up React effect hooks.
+ * Helper method for setting up React effect hooks for Backbone model attributes.
  *
  * @param props - the component props (contains map model and Backbone props)
  * @param modelProperty - the property from the map model to listen for
  *
  * @returns - an object containing the updated value of the property and the handler function
  */
-function useProperty(props: Props, modelProperty: string) {
+function useModelProperty(props: Props, modelProperty: string) {
   const { listenTo, stopListening, map } = props
   const [property, setProperty] = React.useState(map.get(modelProperty))
 
-  function handleChange(model: Backbone.Model) {
+  function handleChange(model: MapModel) {
     setProperty(model.get(modelProperty))
   }
 

@@ -343,13 +343,7 @@ module.exports = Marionette.LayoutView.extend({
         return (
           <RulerOptions
             map={this.mapModel}
-            coordinateFormat={user
-              .get('user')
-              .get('preferences')
-              .get('coordinateFormat')}
-            startCoordinateHandler={this.mapModel.setStartingCoordinates.bind(
-              this.mapModel
-            )}
+            userPreferences={user.get('user').get('preferences')}
           />
         )
       },
