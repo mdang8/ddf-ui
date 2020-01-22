@@ -284,17 +284,25 @@ module.exports = {
 
     const usngPrecision = 6
     const coordinateFormatConversions = {
-      degrees: mtgeo.parseDMS,
+      degrees: mtgeo.parseDMS.bind(mtgeo),
       decimal: undefined,
-      mgrs: converter.USNGtoLL,
-      utm: converter.UTMUPStoLL,
+      mgrs: converter.USNGtoLL.bind(converter),
+      utm: converter.UTMUPStoLL.bind(converter),
     }
     const conversionMethod = coordinateFormatConversions[originalFormat]
+    let latLon = []
+    if (conversionMethod !== undefined) {
+      const converted = conversionMethod(coordinate)
+      if ('lat' in converted && 'lon' in converted) {
+        latLon = [converted.lat, converted.lon]
+      } else {
+        latLon = [converted.north, converted.east]
+      }
+    } else {
+      latLon = coordinate.split(' ')
+    }
     // use lat/lon as the common starting point for all conversions below
-    const [lat, lon] =
-      conversionMethod !== undefined
-        ? conversionMethod(coordinate).split(' ')
-        : coordinate.split(' ')
+    const [lat, lon] = latLon
     const convertedCoordinates = {
       dms: `${mtgeo.toLat(lat)} ${mtgeo.toLon(lon)}`,
       lat: lat,

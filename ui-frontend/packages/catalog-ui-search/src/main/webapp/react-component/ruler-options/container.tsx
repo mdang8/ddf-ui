@@ -24,6 +24,8 @@ import { hot } from 'react-hot-loader'
 const Common = require('../../js/Common')
 
 interface MapModel extends Backbone.Model {
+  changeMeasurementState: (state: string) => void
+  setCoordinateValues: (coordinates: Object) => void
   setStartingCoordinates: (coordinates: Object) => void
 }
 
@@ -43,6 +45,12 @@ const coordinateFormatsMapping = {
   utm: 'utmUps',
 }
 
+/*
+ * RulerOptions is a component that acts as a dropdown menu with handy controls for using the ruler 
+ * feature in the map. If an instance of the ruler already exists on the map, the start/end 
+ * coordinates and final distance measurement will appear here and are able to be copied to the 
+ * clipboard. Users can also enter custom coordinates to include in the measurement as well.
+ */
 function RulerOptions(props: Props) {
   const { map, userPreferences } = props
   let [endCoordinate, setEndCoordinate] = React.useState('')
@@ -89,6 +97,17 @@ function RulerOptions(props: Props) {
     map.setStartingCoordinates(convertedCoordinates)
   }
 
+  const updateRulerCoordinates = (start: string, end: string) => {
+    const convertedStartCoordinates = Common.convertCoordinateFormat(start, coordinateFormat)
+    const convertedEndCoordinates = Common.convertCoordinateFormat(end, coordinateFormat)
+    
+    map.changeMeasurementState('NONE')
+    map.setCoordinateValues(convertedStartCoordinates)
+    map.changeMeasurementState('START')
+    map.setCoordinateValues(convertedEndCoordinates)
+    map.changeMeasurementState('END')
+  }
+
   const rulerProps = {
     startCoordinate: {
       value: startCoordinateString,
@@ -96,8 +115,8 @@ function RulerOptions(props: Props) {
     },
     endCoordinate: { value: endCoordinate, handleChange: setEndCoordinate },
     distance,
-    updateHandler: () => {},
-    clearHandler: () => {},
+    updateHandler: updateRulerCoordinates,
+    clearHandler: () => map.changeMeasurementState('NONE')
   }
   const rulerOptions = <RulerOptionsPresentation {...rulerProps} />
 

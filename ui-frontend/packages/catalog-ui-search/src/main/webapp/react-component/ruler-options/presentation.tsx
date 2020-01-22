@@ -22,7 +22,7 @@ type Props = {
   startCoordinate: { value: string; handleChange: (value: string) => void }
   endCoordinate: { value: string; handleChange: (value: string) => void }
   distance: number
-  updateHandler: () => void
+  updateHandler: (start: string, end: string) => void
   clearHandler: () => void
 }
 
@@ -33,6 +33,9 @@ const Root = styled.div`
 `
 const Text = styled.div`
   line-height: 1.2rem;
+`
+const TextWrapper = styled.div`
+  padding: ${({ theme }) => theme.minimumSpacing};
 `
 const Description = styled.div`
   opacity: ${props => props.theme.minimumOpacity};
@@ -60,37 +63,55 @@ const render = (props: Props) => {
     updateHandler,
     clearHandler,
   } = props
+  const [start, setStart] = React.useState(startCoordinate.value)
+  const [end, setEnd] = React.useState(endCoordinate.value)
   // use meters when distance is under 1000m and convert to kilometers when ≥1000m
   const distanceText =
     distance < 1000 ? `${distance} m` : `${distance * 0.001} km`
 
+  function submitUpdate(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault()
+    console.log(`{ start: "${start}", end: "${end}" }`)
+    updateHandler(start, end)
+  }
+
   return (
     <Root>
-      <Text>
-        <Description>Start Coordinate</Description>
-      </Text>
-      <TextField
-        placeholder={startCoordinate.value}
-        value={startCoordinate.value}
-        onChange={startCoordinate.handleChange}
-      />
+      <TextWrapper>
+        <Text>
+          <Description>Start Coordinate</Description>
+        </Text>
+      
+        <TextField
+          autoFocus
+          placeholder={startCoordinate.value}
+          value={start}
+          onChange={setStart}
+        />
+      </TextWrapper>
 
-      <Text>
-        <Description>End Coordinate</Description>
-      </Text>
-      <TextField
-        placeholder={endCoordinate.value}
-        value={endCoordinate.value}
-        onChange={endCoordinate.handleChange}
-      />
+      <TextWrapper>
+        <Text>
+          <Description>End Coordinate</Description>
+        </Text>
+      
+        <TextField
+          autoFocus
+          placeholder={endCoordinate.value}
+          value={end}
+          onChange={setEnd}
+        />
+      </TextWrapper>
 
-      <Text>
-        <Description>Distance</Description>
-        {distanceText}
-      </Text>
+      <TextWrapper>
+        <Text>
+          <Description>Distance</Description>
+          {distanceText}
+        </Text>
+      </TextWrapper>
 
       <UpdateButton
-        onClick={updateHandler}
+        onClick={submitUpdate}
         title="Update the selected coordinates"
       >
         <span>Update</span>
