@@ -113,6 +113,9 @@ module.exports = Backbone.AssociatedModel.extend({
   clearPoints() {
     this.set({ points: [] })
   },
+  setCoordinateValues(coordinates) {
+    this.set({ coordinateValues: coordinates })
+  },
   /*
    * Set coordinates of the ruler measurements starting point
    */
@@ -157,14 +160,12 @@ module.exports = Backbone.AssociatedModel.extend({
       ? undefined
       : converter.LLtoUSNG(lat, lon, usngPrecision)
     const utmUps = converter.LLtoUTMUPS(lat, lon)
-    this.set({
-      coordinateValues: {
-        lat,
-        lon,
-        dms,
-        mgrs,
-        utmUps,
-      },
+    this.setCoordinateValues({
+      lat,
+      lon,
+      dms,
+      mgrs,
+      utmUps,
     })
   },
 })

@@ -421,23 +421,20 @@ module.exports = Marionette.LayoutView.extend({
   */
   handleMeasurementStateChange() {
     const state = this.mapModel.get('measurementState')
-    let point = null
     switch (state) {
       case 'START':
         this.clearRuler()
-        point = this.map.addRulerPoint(this.mapModel.get('coordinateValues'))
-        this.mapModel.addPoint(point)
         this.mapModel.setStartingCoordinates(
-            this.mapModel.get('coordinateValues')
-        )
-        const polyline = this.map.addRulerLine(
           this.mapModel.get('coordinateValues')
+        )
+        this.createRulerPoint(this.mapModel.get('startingCoordinates'))
+        const polyline = this.map.addRulerLine(
+          this.mapModel.get('startingCoordinates')
         )
         this.mapModel.setLine(polyline)
         break
       case 'END':
-        point = this.map.addRulerPoint(this.mapModel.get('coordinateValues'))
-        this.mapModel.addPoint(point)
+        this.createRulerPoint(this.mapModel.get('coordinateValues'))
         this.map.setRulerLine(this.mapModel.get('coordinateValues'))
         break
       case 'NONE':
@@ -449,6 +446,10 @@ module.exports = Marionette.LayoutView.extend({
       default:
         break
     }
+  },
+  createRulerPoint(coordinates) {
+    const point = this.map.addRulerPoint(coordinates)
+    this.mapModel.addPoint(point)
   },
   /*
     Handles tasks for clearing the ruler, which include removing all points
