@@ -21,7 +21,7 @@ import withListenTo, {
 import Dropdown from '../presentation/dropdown'
 import { hot } from 'react-hot-loader'
 
-const Common = require('../../js/Common')
+const DistanceUtils = require('../../js/DistanceUtils')
 
 interface MapModel extends Backbone.Model {
   changeMeasurementState: (state: string) => void
@@ -53,7 +53,7 @@ const coordinateFormatsMapping = {
  */
 function RulerOptions(props: Props) {
   const { map, userPreferences } = props
-  let [endCoordinate, setEndCoordinate] = React.useState('')
+  // let [endCoordinate, setEndCoordinate] = React.useState('')
   const startCoordinate = useModelProperty(props, 'startingCoordinates')
   const measurementState = useModelProperty(props, 'measurementState')
 
@@ -64,8 +64,8 @@ function RulerOptions(props: Props) {
     ? coordinateFormatsMapping[coordinateFormat]
     : ''
 
-  let coordinateString,
-    startCoordinateString = ''
+  let coordinateString, startCoordinateString, endCoordinateString
+  coordinateString = startCoordinateString = endCoordinateString = ''
   let distance = 0
   if (measurementState.value !== 'NONE') {
     // decimal format is a special case because the values are stored in multiple keys
@@ -83,26 +83,18 @@ function RulerOptions(props: Props) {
   }
 
   if (measurementState.value === 'END') {
-    endCoordinate = coordinateString
+    endCoordinateString = coordinateString
     distance = map.get('currentDistance')
   } else {
     startCoordinateString = coordinateString
   }
 
-  function changeStartCoordinate(value: string) {
-    const convertedCoordinates = Common.convertCoordinateFormat(
-      value,
-      coordinateFormat
-    )
-    map.setStartingCoordinates(convertedCoordinates)
-  }
-
   const updateRulerCoordinates = (start: string, end: string) => {
-    const convertedStartCoordinates = Common.convertCoordinateFormat(
+    const convertedStartCoordinates = DistanceUtils.convertCoordinateFormat(
       start,
       coordinateFormat
     )
-    const convertedEndCoordinates = Common.convertCoordinateFormat(
+    const convertedEndCoordinates = DistanceUtils.convertCoordinateFormat(
       end,
       coordinateFormat
     )
@@ -112,17 +104,16 @@ function RulerOptions(props: Props) {
     map.changeMeasurementState('START')
     map.setCoordinateValues(convertedEndCoordinates)
     map.changeMeasurementState('END')
+    startCoordinateString = start
+    endCoordinateString = end
   }
 
   const rulerProps = {
-    startCoordinate: {
-      value: startCoordinateString,
-      handleChange: changeStartCoordinate,
-    },
-    endCoordinate: { value: endCoordinate, handleChange: setEndCoordinate },
+    startCoordinate: startCoordinateString,
+    endCoordinate: endCoordinateString,
     distance,
     updateHandler: updateRulerCoordinates,
-    clearHandler: () => map.changeMeasurementState('NONE'),
+    clearHandler: clearRulerCoordinates,
   }
   const rulerOptions = <RulerOptionsPresentation {...rulerProps} />
 
@@ -174,6 +165,10 @@ function useModelProperty(props: Props, modelProperty: string) {
  */
 function hasKey<O>(obj: O, key: keyof any): key is keyof O {
   return key in obj
+}
+
+const clearRulerCoordinates = () => {
+  map.changeMeasurementState('NONE')
 }
 
 export default hot(module)(withListenTo(RulerOptions))

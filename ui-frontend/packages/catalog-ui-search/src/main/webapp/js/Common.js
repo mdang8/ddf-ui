@@ -17,9 +17,6 @@
 const $ = require('jquery')
 const moment = require('moment')
 const _ = require('underscore')
-const mtgeo = require('mt-geo')
-const usngs = require('usng.js')
-const converter = new usngs.Converter()
 require('./requestAnimationFramePolyfill')
 
 const timeZones = {
@@ -276,41 +273,5 @@ module.exports = {
       this.wrapMapCoordinates(lon, [-180, 180]),
       this.wrapMapCoordinates(lat, [-90, 90]),
     ])
-  },
-  convertCoordinateFormat(coordinate, originalFormat) {
-    if (originalFormat === '') {
-      return coordinate
-    }
-
-    const usngPrecision = 6
-    const coordinateFormatConversions = {
-      degrees: mtgeo.parseDMS.bind(mtgeo),
-      decimal: undefined,
-      mgrs: converter.USNGtoLL.bind(converter),
-      utm: converter.UTMUPStoLL.bind(converter),
-    }
-    const conversionMethod = coordinateFormatConversions[originalFormat]
-    let latLon = []
-    if (conversionMethod !== undefined) {
-      const converted = conversionMethod(coordinate)
-      if ('lat' in converted && 'lon' in converted) {
-        latLon = [converted.lat, converted.lon]
-      } else {
-        latLon = [converted.north, converted.east]
-      }
-    } else {
-      latLon = coordinate.split(' ')
-    }
-    // use lat/lon as the common starting point for all conversions below
-    const [lat, lon] = latLon
-    const convertedCoordinates = {
-      dms: `${mtgeo.toLat(lat)} ${mtgeo.toLon(lon)}`,
-      lat: lat,
-      lon: lon,
-      mgrs: converter.LLtoMGRS(lat, lon, usngPrecision),
-      utmUps: converter.LLtoUTMUPS(lat, lon),
-    }
-
-    return convertedCoordinates
   },
 }

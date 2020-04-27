@@ -27,6 +27,7 @@ const GeometryCollectionView = require('./geometry.collection.view')
 const ClusterCollectionView = require('./cluster.collection.view')
 const ClusterCollection = require('./cluster.collection')
 const CQLUtils = require('../../../js/CQLUtils.js')
+const DistanceUtils = require('../../../js/DistanceUtils.js')
 const LocationModel = require('../../location-old/location-old.js')
 const user = require('../../singletons/user-instance.js')
 const LayersDropdown = require('../../dropdown/layers/dropdown.layers.view.js')
@@ -43,7 +44,6 @@ import MapSettings from '../../../react-component/map-settings'
 import MapInfo from '../../../react-component/map-info'
 import RulerOptions from '../../../react-component/ruler-options'
 import DistanceInfo from '../../../react-component/distance-info'
-import getDistance from 'geolib/es/getDistance'
 
 function findExtreme({ objArray, property, comparator }) {
   if (objArray.length === 0) {
@@ -396,12 +396,13 @@ module.exports = Marionette.LayoutView.extend({
 
         // update distance info
         const startingCoordinates = this.mapModel.get('startingCoordinates')
-        const dist = getDistance(
-          { latitude: lat, longitude: lon },
+        const dist = DistanceUtils.distanceBetweenCoordinates(
+          { lat, lon },
           {
-            latitude: startingCoordinates['lat'],
-            longitude: startingCoordinates['lon'],
-          }
+            lat: startingCoordinates['lat'],
+            lon: startingCoordinates['lon'],
+          },
+          'latlon'
         )
         this.mapModel.setDistanceInfoPosition(event.clientX, event.clientY)
         this.mapModel.setCurrentDistance(dist)

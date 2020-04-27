@@ -15,6 +15,11 @@
 
 /*jshint bitwise: false*/
 
+const mtgeo = require('mt-geo')
+const usngs = require('usng.js')
+const converter = new usngs.Converter()
+import getDistance from 'geolib/es/getDistance'
+
 const EARTH_MEAN_RADIUS_METERS = 6371008.7714
 
 const DEGREES_TO_RADIANS = Math.PI / 180
@@ -32,6 +37,55 @@ of application */
 const DECIMAL_PRECISION = 6
 
 module.exports = {
+  convertCoordinateFormat(coordinate, originalFormat) {
+    if (originalFormat === '') {
+      return coordinate
+    }
+
+    const usngPrecision = 6
+    const coordinateFormatConversions = {
+      degrees: mtgeo.parseDMS.bind(mtgeo),
+      decimal: undefined,
+      mgrs: converter.USNGtoLL.bind(converter),
+      utm: converter.UTMUPStoLL.bind(converter),
+    }
+    const conversionMethod = coordinateFormatConversions[originalFormat]
+    let latLon = []
+    if (conversionMethod !== undefined) {
+      const converted = conversionMethod(coordinate)
+      if ('lat' in converted && 'lon' in converted) {
+        latLon = [converted.lat, converted.lon]
+      } else {
+        latLon = [converted.north, converted.east]
+      }
+    } else {
+      latLon = coordinate.split(' ')
+    }
+    // use lat/lon as the common starting point for all conversions below
+    const [lat, lon] = latLon
+    const convertedCoordinates = {
+      dms: `${mtgeo.toLat(lat)} ${mtgeo.toLon(lon)}`,
+      lat: lat,
+      lon: lon,
+      mgrs: converter.LLtoMGRS(lat, lon, usngPrecision),
+      utmUps: converter.LLtoUTMUPS(lat, lon),
+    }
+
+    return convertedCoordinates
+  },
+  distanceBetweenCoordinates(from, to, format) {
+    const { lat: latFrom, lon: lonFrom } = (format !== 'latlon')
+      ? this.convertCoordinateFormat(from, format)
+      : from
+    const { lat: latTo, lon: lonTo } = (format !== 'latlon')
+      ? this.convertCoordinateFormat(to, format)
+      : to
+
+    return getDistance(
+      { latitude: latFrom, longitude: lonFrom },
+      { latitude: latTo, longitude: lonTo }
+    )
+  },
   distToDegrees(distanceInMeters) {
     return this.toDegrees(this.distToRadians(distanceInMeters))
   },

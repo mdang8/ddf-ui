@@ -19,8 +19,8 @@ import { hot } from 'react-hot-loader'
 const TextField = require('../text-field/index')
 
 type Props = {
-  startCoordinate: { value: string; handleChange: (value: string) => void }
-  endCoordinate: { value: string; handleChange: (value: string) => void }
+  startCoordinate: string
+  endCoordinate: string
   distance: number
   updateHandler: (start: string, end: string) => void
   clearHandler: () => void
@@ -55,6 +55,23 @@ const ClearButton = styled.button`
   background-color: #ff0000;
 `
 
+// const useCoordinate = (props: Props, initialValue: string) => {
+
+// }
+
+const useInitialCoordinate = (initialValue: string) => {
+  const [initialCoordinate, setInitialCoordinate] = React.useState(initialValue)
+
+  const handleChange = () => {
+    setInitialCoordinate('')
+  }
+
+  return {
+    value: initialCoordinate,
+    handleChange
+  }
+}
+
 const render = (props: Props) => {
   const {
     startCoordinate,
@@ -63,15 +80,32 @@ const render = (props: Props) => {
     updateHandler,
     clearHandler,
   } = props
-  const [start, setStart] = React.useState(startCoordinate.value)
-  const [end, setEnd] = React.useState(endCoordinate.value)
+  const initialStart = useInitialCoordinate(startCoordinate)
+  const initialEnd = useInitialCoordinate(endCoordinate)
+  const [start, setStart] = React.useState(startCoordinate)
+  const [end, setEnd] = React.useState(endCoordinate)
   // use meters when distance is under 1000m and convert to kilometers when ≥1000m
   const distanceText =
     distance < 1000 ? `${distance} m` : `${distance * 0.001} km`
+  const startValue = (initialStart.value !== startCoordinate) ? startCoordinate : start
+  const endValue = (initialEnd.value !== endCoordinate) ? endCoordinate : end
 
-  function submitUpdate(e: React.MouseEvent<HTMLButtonElement>) {
+  const submitUpdate = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    start: string,
+    end: string,
+    updateHandler: (start: string, end: string) => void
+  ) => {
     e.preventDefault()
+  
+    if (start === '' && end === '') {
+      console.log('no coordinates to update')
+      return
+    }
+  
     console.log(`{ start: "${start}", end: "${end}" }`)
+    setStart(start)
+    setEnd(end)
     updateHandler(start, end)
   }
 
@@ -84,8 +118,8 @@ const render = (props: Props) => {
 
         <TextField
           autoFocus
-          placeholder={startCoordinate.value}
-          value={start}
+          // placeholder={startCoordinate}
+          value={startValue}
           onChange={setStart}
         />
       </TextWrapper>
@@ -97,8 +131,8 @@ const render = (props: Props) => {
 
         <TextField
           autoFocus
-          placeholder={endCoordinate.value}
-          value={end}
+          // placeholder={endCoordinate}
+          value={endValue}
           onChange={setEnd}
         />
       </TextWrapper>
@@ -111,7 +145,7 @@ const render = (props: Props) => {
       </TextWrapper>
 
       <UpdateButton
-        onClick={submitUpdate}
+        onClick={e => submitUpdate(e, start, end, updateHandler)}
         title="Update the selected coordinates"
       >
         <span>Update</span>
